@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <sys/time.h>
 
 
 /* función para generar <size> cantidad de datos aleatorios */
@@ -26,6 +28,7 @@ int main()
   double* y = NULL;
   int n, iters;
   long seed;
+  struct timeval start_time, stop_time, elapsed_time;
 
   // Obtener las dimensiones
   printf("Ingrese la dimensión n:\n");
@@ -41,9 +44,16 @@ int main()
   x = malloc(sizeof(double) * n);
   y = malloc(sizeof(double) * n);
 
+
+
+    gettimeofday(&start_time,NULL);
+
   //generar valores para las matrices
   gen_data(A, n*n);
   gen_data(x, n);
+
+
+    
 
     #pragma acc data copyin(A,x,y,n,iters)
     {
@@ -52,6 +62,12 @@ int main()
         #pragma acc update self(y,n)
         print_vector("y", y, n);
     }
+
+    gettimeofday(&stop_time,NULL);
+    timersub(&stop_time, &start_time, &elapsed_time); // Unix time subtract routine
+
+    printf("Total time was %f seconds.\n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
+
   free(A);
   free(x);
   free(y);
