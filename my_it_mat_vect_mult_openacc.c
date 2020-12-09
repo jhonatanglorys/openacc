@@ -55,19 +55,17 @@ int main()
 
     
 
-    #pragma acc data copyin(A,x,y,n,iters)
-    {
+    
         mat_vect_mult(A, x, y, n, iters);
-
         #pragma acc update self(y,n)
         print_vector("y", y, n);
-    }
+ 
 
     gettimeofday(&stop_time,NULL);
     timersub(&stop_time, &start_time, &elapsed_time); // Unix time subtract routine
 
     printf("Total time was %f seconds.\n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
-
+    
   free(A);
   free(x);
   free(y);
@@ -83,17 +81,25 @@ void gen_data(double * array, int size){
 
 void mat_vect_mult(double* A, double* x, double* y, int n, int it){
   int h, i, j;
-  #pragma acc kernels
-  for(h = 0; h < it; h++){
-    for(i = 0; i < n; i++){
-      y[i] = 0.0;
-      for(j = 0; j < n; j++)
-	    y[i] += A[i*n+j] * x[j];
+  #pragma acc data copyin(A,x,y,n,it)
+  {
+    #pragma acc kernels
+  {
+    for(h = 0; h < it; h++){
+      for(i = 0; i < n; i++){
+        y[i] = 0.0;
+        for(j = 0; j < n; j++){
+          y[i] += A[i*n+j] * x[j];
+        }
+      }
+      // x <= y
+      #pragma acc update self(x,y,n)
+      for(i = 0; i < n; i++)
+        x[i] = y[i];
     }
-    // x <= y
-    for(i = 0; i < n; i++)
-      x[i] = y[i];
   }
+  }
+  
 }
 
 void print_vector(char* name, double*  z, int m) {
