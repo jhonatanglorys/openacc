@@ -57,7 +57,7 @@ int main()
 
     
         mat_vect_mult(A, x, y, n, iters);
-        #pragma acc update self(y,n)
+        #pragma acc data copyout(y)
         print_vector("y", y, n);
  
 
@@ -92,7 +92,6 @@ void mat_vect_mult(double* A, double* x, double* y, int n, int it){
               y[i] += A[i*n+j] * x[j];
             }
           }
-          // x <= y
           for(i = 0; i < n; i++)
             x[i] = y[i]/(n/2.0);
         }
