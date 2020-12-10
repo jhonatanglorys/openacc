@@ -83,21 +83,22 @@ void mat_vect_mult(double* A, double* x, double* y, int n, int it){
   int h, i, j;
   #pragma acc data copyin(A,x,y,n,it)
   {
-    #pragma acc kernels
-  {
-    for(h = 0; h < it; h++){
-      for(i = 0; i < n; i++){
-        y[i] = 0.0;
-        for(j = 0; j < n; j++){
-          y[i] += A[i*n+j] * x[j];
+       #pragma acc loop reduction (+:y)
+      {
+        for(h = 0; h < it; h++){
+          for(i = 0; i < n; i++){
+            y[i] = 0.0;
+            for(j = 0; j < n; j++){
+              y[i] += A[i*n+j] * x[j];
+            }
+          }
+          // x <= y
+          for(i = 0; i < n; i++)
+            x[i] = y[i]/(n/2.0);
         }
       }
-      // x <= y
-      #pragma acc update self(x,y,n)
-      for(i = 0; i < n; i++)
-        x[i] = y[i];
-    }
-  }
+    
+   
   }
   
 }

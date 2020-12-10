@@ -85,7 +85,7 @@ void mat_vect_mult(double* A, double* x, double* y, int n, int it){
     }
     // x <= y
     for(i = 0; i < n; i++)
-      x[i] = y[i];
+      x[i] = y[i]/(n/2.0);
   }
 }
 
